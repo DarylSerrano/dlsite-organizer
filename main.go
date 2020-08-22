@@ -32,5 +32,7 @@ func main() {
 	// getRJCode()
 	// hasRJCode()
 	// createSymbolicLink()
-	initialize(".")
+	// initialize(".")
+
+	fetchWork("297092")
 }

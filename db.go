@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -16,99 +17,71 @@ type WorkDB struct {
 	circleID int
 }
 
-func queryTest(db *sql.DB) {
-	var (
-		id       int
-		sfw      bool
-		name     string
-		circleID int
-	)
-	rows, err := db.Query("select * from Works where ID = ?", 293003)
+func postTag(db *sql.DB, tagName string) {
+	_, err := db.Exec(`INSERT INTO Tags(Name) VALUES(?)`, tagName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
+}
 
-	for rows.Next() {
-		err := rows.Scan(&id, &sfw, &name, &circleID)
-		if err != nil {
-			log.Fatal(err)
+func postCircle(db *sql.DB, id string, name string) {
+	_, err := db.Exec(`INSERT INTO Circles(ID, Name) VALUES(?, ?)`, id, name)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func postVoiceActor(db *sql.DB, name string) {
+	_, err := db.Exec(`INSERT INTO VoiceActors(Name) VALUES(?)`, name)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func postWorkTag(db *sql.DB, workID int, tagID int) {
+	_, err := db.Exec(`INSERT INTO WorkTag(WorkID, TagID) VALUES(?, ?)`, workID, tagID)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func postWorkVoiceActor(db *sql.DB, workID int, voiceActorID int) {
+	_, err := db.Exec(`INSERT INTO WorkVoiceActor(WorkID, VoiceActorID) VALUES(?, ?)`,
+		workID, voiceActorID)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func postWork(db *sql.DB, work Work, filepath string) {
+	var isSfw int
+	if work.sfw {
+		isSfw = 1
+	} else {
+		isSfw = 0
+	}
+	_, err := db.Exec(`INSERT INTO Works(ID, sfw, Name, CircleID, Filepath) VALUES(?, ?, ?, ?, ?)`,
+		work.ID, isSfw, work.Name, work.Circle.ID, filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func rowExists(db *sql.DB, tableName string, name string) bool {
+	query := fmt.Sprintf(`SELECT EXISTS(SELECT * FROM %s WHERE Name = %s)`, tableName, name)
+	var exists bool
+	err := db.QueryRow(query).Scan(&exists)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
 		}
-		log.Println(id, sfw, name, circleID)
-	}
 
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
+	return exists
 }
 
-func getAllWorks(db *sql.DB) []WorkDB {
-	var works []WorkDB
-
-	rows, err := db.Query("select * from Works")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var work WorkDB
-		err := rows.Scan(&work.id, &work.sfw, &work.name, &work.circleID, &work.filepath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println(work.id, work.sfw, work.name, work.circleID, work.filepath)
-		works = append(works, work)
-	}
-
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return works
-}
-
-func insertTag(db *sql.DB, tagName string) {
-	stmt, err := db.Prepare("INSERT INTO tags(Name) VALUES(?)")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	res, err := stmt.Exec(tagName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	lastID, err := res.LastInsertId()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rowCnt, err := res.RowsAffected()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("ID = %d, affected = %d\n", lastID, rowCnt)
-}
-
-func access() {
-	db, err := sql.Open("sqlite3", "./example.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	// queryTest(db)
-
-	// getAllWorks(db)
-
-	// insertTag(db, "ささやき")
-}
-
-func containsWork(db *sql.DB, id int) bool {
+func workExists(db *sql.DB, id int) bool {
 	var name string
 	err := db.QueryRow("SELECT Name FROM Works WHERE ID = ?", id).Scan(&name)
 	if err != nil {
@@ -119,6 +92,31 @@ func containsWork(db *sql.DB, id int) bool {
 		log.Panic(err)
 	}
 	return true
+}
+
+func circleIDExists(db *sql.DB, id int) bool {
+	var name string
+	err := db.QueryRow("SELECT Name FROM Circles WHERE ID = ?", id).Scan(&name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+
+		log.Panic(err)
+	}
+	return true
+}
+
+func tagExists(db *sql.DB, name string) bool {
+	return rowExists(db, "Tags", name)
+}
+
+func circleNameExists(db *sql.DB, name string) bool {
+	return rowExists(db, "Circles", name)
+}
+
+func voiceActorExists(db *sql.DB, name string) bool {
+	return rowExists(db, "VoiceActors", name)
 }
 
 func createTables(db *sql.DB) error {

@@ -8,7 +8,7 @@ import (
 	"regexp"
 )
 
-var reRJCode = regexp.MustCompile(`RJ\d+`)
+var reCode = regexp.MustCompile(`R(J|G)\d+`)
 
 func showCurrentFolderFiles() {
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
@@ -46,13 +46,13 @@ func testCreateDir() {
 }
 
 func getRJCode(filename string) string {
-	foundRj := reRJCode.FindString("RJ83749839sakldnask")
+	foundRj := reCode.FindString(filename)
 
 	return foundRj[2:]
 }
 
 func hasRJCode(filename string) bool {
-	matched := reRJCode.MatchString("RJ83749839sakldnask")
+	matched := reCode.MatchString(filename)
 	return matched
 }
 

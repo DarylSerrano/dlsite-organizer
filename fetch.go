@@ -12,18 +12,32 @@ import (
 type Work struct {
 	ID          string
 	Name        string
-	Circle      string
+	Circle      CircleParsed
 	VoiceActors []string
 	Tags        []string
 	sfw         bool
+}
+
+// A CircleParsed contains information of DLSite group parsed
+type CircleParsed struct {
+	ID   string
+	Name string
 }
 
 func parseName(goquerySelection *goquery.Selection) string {
 	return goquerySelection.Find("#work_name > a").Text()
 }
 
-func parseCircle(goquerySelection *goquery.Selection) string {
-	return goquerySelection.Find("#work_maker > tbody > tr > td > span > a").Text()
+func parseCircle(goquerySelection *goquery.Selection) CircleParsed {
+	var data CircleParsed
+	aTag := goquerySelection.Find("#work_maker > tbody > tr > td > span > a")
+	data.Name = aTag.Text()
+	url, urlExists := aTag.Attr("href")
+	if urlExists {
+		data.ID = getRJCode(url)
+	}
+
+	return data
 }
 
 func parseVoiceActors(goquerySelection *goquery.Selection) []string {
@@ -76,31 +90,14 @@ func fetchWork(code string) (*Work, error) {
 		goquerySelection := e.DOM
 
 		workInfo.Name = parseName(goquerySelection)
-		// fmt.Println(workInfo.Name)
 
 		workInfo.Circle = parseCircle(goquerySelection)
-		// fmt.Println(workInfo.Circle)
 
 		workInfo.VoiceActors = parseVoiceActors(goquerySelection)
-		// fmt.Println(workInfo.VoiceActors)
 
 		workInfo.Tags = parseTags(goquerySelection)
-		// fmt.Println(workInfo.Tags)
 
 		workInfo.sfw = parseSfw(goquerySelection)
-
-		//Find("#work_outline > tbody").
-
-		// if ret, err := goquerySelection.
-		// 	Find("#work_outline > tbody").
-		// 	Find(`th:contains("ジャンル")`).
-		// 	Next().
-		// 	Find("a").
-		// 	Html(); err != nil {
-		// 	fmt.Println(err)
-		// } else {
-		// 	fmt.Println(ret)
-		// }
 	})
 
 	c.OnRequest(func(r *colly.Request) {
