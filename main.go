@@ -1,12 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 	"path/filepath"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
-func initialize(path string) {
+func initializeDB(path string) string {
 	var dataPath = filepath.Join(path, "data")
 	err := os.MkdirAll(dataPath, 0755)
 	if err != nil {
@@ -17,22 +20,27 @@ func initialize(path string) {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	return databasePath
+}
+
+func openDB(path string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", path)
+	if err != nil {
+		return nil, err
+	}
+	err = createTables(db)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 func main() {
-	// if work, err := fetchWork("293003"); err != nil {
-	// 	fmt.Println(err)
-	// } else {
-	// 	fmt.Println(*work)
-	// }
-	// access()
-	// showCurrentFolderFiles()
-	// testCreateDir()
-
-	// getRJCode()
-	// hasRJCode()
-	// createSymbolicLink()
-	// initialize(".")
-
-	fetchWork("297092")
+	databasePath := initializeDB(".")
+	db, err := openDB(databasePath)
+	if err != nil {
+		log.Panic(err)
+	}
+	scanFiles(".", db)
 }
