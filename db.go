@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -15,6 +16,40 @@ type WorkDB struct {
 	name     string
 	filepath string
 	circleID int
+}
+
+type errorString struct {
+	s string
+}
+
+func (e *errorString) Error() string {
+	return e.s
+}
+
+func getTagID(db *sql.DB, tagName string) (int, error) {
+	var ID int
+	err := db.QueryRow("SELECT ID FROM Tags WHERE Name = ?", tagName).Scan(&ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, &errorString{s: "Not found"}
+		}
+
+		log.Panic(err)
+	}
+	return ID, nil
+}
+
+func getVoiceActorID(db *sql.DB, voiceActorName string) (int, error) {
+	var ID int
+	err := db.QueryRow("SELECT ID FROM VoiceActors WHERE Name = ?", voiceActorName).Scan(&ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, &errorString{s: "Not found"}
+		}
+
+		log.Panic(err)
+	}
+	return ID, nil
 }
 
 func postTag(db *sql.DB, tagName string) {
@@ -170,4 +205,46 @@ func createTables(db *sql.DB) error {
 	);`)
 
 	return err
+}
+
+func saveWork(db *sql.DB, work Work, filepath string) error {
+	circleID, err := strconv.ParseInt(work.Circle.ID, 10, 32)
+	if err != nil {
+		return err
+	}
+	workID, err := strconv.ParseInt(work.ID, 10, 32)
+	if err != nil {
+		return err
+	}
+	if !circleIDExists(db, int(circleID)) {
+		postCircle(db, work.Circle.ID, work.Circle.Name)
+	}
+
+	postWork(db, work, filepath)
+
+	// Save tags and create relationships
+	for _, tagName := range work.Tags {
+		if !tagExists(db, tagName) {
+			postTag(db, tagName)
+		}
+		tagID, err := getTagID(db, tagName)
+		if err != nil {
+			return err
+		}
+		postWorkTag(db, int(workID), tagID)
+	}
+
+	// Save voice actors and create relationships
+	for _, voiceActorName := range work.VoiceActors {
+		if !voiceActorExists(db, voiceActorName) {
+			postVoiceActor(db, voiceActorName)
+		}
+		voiceActorID, err := getVoiceActorID(db, voiceActorName)
+		if err != nil {
+			return err
+		}
+		postWorkVoiceActor(db, int(workID), voiceActorID)
+	}
+
+	return nil
 }
