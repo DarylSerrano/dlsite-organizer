@@ -31,6 +31,19 @@ func scanFiles(basepath string, db *sql.DB) {
 			return err
 		}
 		log.Printf("visited file or dir: %q\n", path)
+
+		if hasRJCode(path) {
+			rjCode := getRJCode(path)
+			work, err := fetchWork(rjCode)
+			if err != nil {
+				return err
+			}
+			err = saveWork(db, *work, path)
+			if err != nil {
+				return err
+			}
+		}
+
 		return nil
 	})
 	if err != nil {
