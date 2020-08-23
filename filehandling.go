@@ -10,30 +10,26 @@ import (
 
 var reCode = regexp.MustCompile(`R(J|G)\d+`)
 
-func showCurrentFolderFiles() {
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			log.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
-			return err
-		}
-		log.Printf("visited file or dir: %q\n", path)
-		return nil
-	})
-	if err != nil {
-		log.Fatalf("error walking the path: %v\n", err)
-	}
-}
-
 func scanFiles(basepath string, db *sql.DB) {
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+	absPath, err := filepath.Abs(basepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print("abs path: ", absPath)
+
+	err = filepath.Walk(absPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 			return err
 		}
 		log.Printf("visited file or dir: %q\n", path)
 
-		if hasRJCode(path) {
-			rjCode := getRJCode(path)
+		if info.IsDir() {
+			return nil
+		}
+
+		if !info.IsDir() && hasRJCode(info.Name()) {
+			rjCode := getRJCode(info.Name())
 			work, err := fetchWork(rjCode)
 			if err != nil {
 				return err

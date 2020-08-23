@@ -60,6 +60,7 @@ func postTag(db *sql.DB, tagName string) {
 }
 
 func postCircle(db *sql.DB, id string, name string) {
+	log.Print("create circle ", id, name)
 	_, err := db.Exec(`INSERT INTO Circles(ID, Name) VALUES(?, ?)`, id, name)
 	if err != nil {
 		log.Fatal(err)
@@ -89,6 +90,7 @@ func postWorkVoiceActor(db *sql.DB, workID int, voiceActorID int) {
 }
 
 func postWork(db *sql.DB, work Work, filepath string) {
+	log.Print("create work ", work, filepath)
 	var isSfw int
 	if work.sfw {
 		isSfw = 1
@@ -102,8 +104,17 @@ func postWork(db *sql.DB, work Work, filepath string) {
 	}
 }
 
+func updateWorkFilepath(db *sql.DB, work Work, filepath string) {
+	_, err := db.Exec(`INSERT OR REPLACE INTO Works(Filepath) VALUES(?) WHERE ID = ?`,
+		work.ID, filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func rowExists(db *sql.DB, tableName string, name string) bool {
-	query := fmt.Sprintf(`SELECT EXISTS(SELECT * FROM %s WHERE Name = %s)`, tableName, name)
+	query := fmt.Sprintf(`SELECT EXISTS(SELECT * FROM %s WHERE Name = '%s')`, tableName, name)
+	log.Print("row exists of: ", query)
 	var exists bool
 	err := db.QueryRow(query).Scan(&exists)
 	if err != nil {
@@ -208,6 +219,7 @@ func createTables(db *sql.DB) error {
 }
 
 func saveWork(db *sql.DB, work Work, filepath string) error {
+	log.Print("Saving ", work)
 	circleID, err := strconv.ParseInt(work.Circle.ID, 10, 32)
 	if err != nil {
 		return err
@@ -220,30 +232,33 @@ func saveWork(db *sql.DB, work Work, filepath string) error {
 		postCircle(db, work.Circle.ID, work.Circle.Name)
 	}
 
-	postWork(db, work, filepath)
+	if workExists(db, int(workID)) {
+		updateWorkFilepath(db, work, filepath)
+	} else {
+		postWork(db, work, filepath)
+		// Save tags and create relationships
+		for _, tagName := range work.Tags {
+			if !tagExists(db, tagName) {
+				postTag(db, tagName)
+			}
+			tagID, err := getTagID(db, tagName)
+			if err != nil {
+				return err
+			}
+			postWorkTag(db, int(workID), tagID)
+		}
 
-	// Save tags and create relationships
-	for _, tagName := range work.Tags {
-		if !tagExists(db, tagName) {
-			postTag(db, tagName)
+		// Save voice actors and create relationships
+		for _, voiceActorName := range work.VoiceActors {
+			if !voiceActorExists(db, voiceActorName) {
+				postVoiceActor(db, voiceActorName)
+			}
+			voiceActorID, err := getVoiceActorID(db, voiceActorName)
+			if err != nil {
+				return err
+			}
+			postWorkVoiceActor(db, int(workID), voiceActorID)
 		}
-		tagID, err := getTagID(db, tagName)
-		if err != nil {
-			return err
-		}
-		postWorkTag(db, int(workID), tagID)
-	}
-
-	// Save voice actors and create relationships
-	for _, voiceActorName := range work.VoiceActors {
-		if !voiceActorExists(db, voiceActorName) {
-			postVoiceActor(db, voiceActorName)
-		}
-		voiceActorID, err := getVoiceActorID(db, voiceActorName)
-		if err != nil {
-			return err
-		}
-		postWorkVoiceActor(db, int(workID), voiceActorID)
 	}
 
 	return nil

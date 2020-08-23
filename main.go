@@ -9,6 +9,17 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+		log.Fatal(err)
+	}
+	return !info.IsDir()
+}
+
 func initializeDB(path string) string {
 	var dataPath = filepath.Join(path, "data")
 	err := os.MkdirAll(dataPath, 0755)
@@ -16,9 +27,11 @@ func initializeDB(path string) string {
 		log.Panic(err)
 	}
 	var databasePath = filepath.Join(dataPath, "data.db")
-	_, err = os.Create(databasePath)
-	if err != nil {
-		log.Panic(err)
+	if !fileExists(dataPath) {
+		_, err = os.Create(databasePath)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 
 	return databasePath
@@ -37,10 +50,12 @@ func openDB(path string) (*sql.DB, error) {
 }
 
 func main() {
-	databasePath := initializeDB(".")
+	basepath := "./testdata"
+	databasePath := initializeDB(basepath)
 	db, err := openDB(databasePath)
 	if err != nil {
 		log.Panic(err)
 	}
-	scanFiles(".", db)
+	defer db.Close()
+	scanFiles(basepath, db)
 }
