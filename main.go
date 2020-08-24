@@ -66,6 +66,12 @@ func filterNsfwTest(basepath string, db *sql.DB) {
 	filterBySfw(db, false, folderNsfw)
 }
 
+func filterTagTest(basepath string, db *sql.DB) {
+	tag := TagDB{ID: 2, Name: "耳舐め"}
+	folderTag := filepath.Join(basepath, "Tags")
+	filterByTag(db, tag, folderTag)
+}
+
 func main() {
 	basepath := "./testdata"
 	databasePath := initializeDB(basepath)
@@ -78,4 +84,5 @@ func main() {
 	// filterCircleTest(basepath, db)
 	// filterNsfwTest(basepath, db)
 	// filterSfwTest(basepath, db)
+	filterTagTest(basepath, db)
 }
