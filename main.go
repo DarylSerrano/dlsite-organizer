@@ -50,6 +50,12 @@ func openDB(path string) (*sql.DB, error) {
 	return db, nil
 }
 
+func filterCircleTest(basepath string, db *sql.DB) {
+	circle := CircleDB{ID: 38835, Name: "みやぢ屋"}
+	filterpath := filepath.Join(basepath, "Circles")
+	filterByCircle(db, circle, filterpath)
+}
+
 func main() {
 	basepath := "./testdata"
 	databasePath := initializeDB(basepath)
@@ -59,7 +65,6 @@ func main() {
 	}
 	defer db.Close()
 	scanFiles(basepath, db)
-	circle := CircleDB{ID: 38835, Name: "みやぢ屋"}
-	filterpath := filepath.Join(basepath, "Circles")
-	filterByCircle(db, circle, filterpath)
+	// filterCircleTest(basepath, db)
+
 }

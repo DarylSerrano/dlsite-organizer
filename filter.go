@@ -36,12 +36,17 @@ func filterByCircle(db *sql.DB, circle CircleDB, basepath string) {
 }
 
 func getFilteredWorkByCircle(db *sql.DB, circleID int) []WorkFilterResult {
-	var works []WorkFilterResult
 	rows, err := db.Query("SELECT ID, Name, Filepath FROM Works WHERE CircleID = ?", circleID)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
+	var works = scanWorksFiltered(rows)
+	return works
+}
+
+func scanWorksFiltered(rows *sql.Rows) []WorkFilterResult {
+	var works []WorkFilterResult
 	for rows.Next() {
 		var work WorkFilterResult
 		err := rows.Scan(&work.ID, &work.Name, &work.filepath)
@@ -54,14 +59,14 @@ func getFilteredWorkByCircle(db *sql.DB, circleID int) []WorkFilterResult {
 	return works
 }
 
+func filterWorksBySfw(db *sql.DB, isSfw bool) {
+
+}
+
 func filterWorksByVoiceActor(db *sql.DB, voiceActorID int) {
 
 }
 
 func filterWorksByTag(db *sql.DB, tagName string) {
-
-}
-
-func filterWorksBySfw(db *sql.DB, isSfw bool) {
 
 }

@@ -105,8 +105,7 @@ func postWork(db *sql.DB, work Work, filepath string) {
 }
 
 func updateWorkFilepath(db *sql.DB, work Work, filepath string) {
-	_, err := db.Exec(`INSERT OR REPLACE INTO Works(Filepath) VALUES(?) WHERE ID = ?`,
-		work.ID, filepath)
+	_, err := db.Exec(`UPDATE Works SET Filepath = ? WHERE ID = ?`, filepath, work.ID)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -233,6 +232,7 @@ func saveWork(db *sql.DB, work Work, filepath string) error {
 	}
 
 	if workExists(db, int(workID)) {
+		log.Print("WOrk exists, update")
 		updateWorkFilepath(db, work, filepath)
 	} else {
 		postWork(db, work, filepath)
