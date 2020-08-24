@@ -47,13 +47,6 @@ func scanFiles(basepath string, db *sql.DB) {
 	}
 }
 
-func testCreateDir() {
-	err := os.Mkdir("testDir2", 0755)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func getRJCode(filename string) string {
 	foundRj := reCode.FindString(filename)
 

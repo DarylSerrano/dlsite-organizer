@@ -56,6 +56,16 @@ func filterCircleTest(basepath string, db *sql.DB) {
 	filterByCircle(db, circle, filterpath)
 }
 
+func filterSfwTest(basepath string, db *sql.DB) {
+	folderSfw := filepath.Join(basepath, "SFW")
+	filterBySfw(db, true, folderSfw)
+}
+
+func filterNsfwTest(basepath string, db *sql.DB) {
+	folderNsfw := filepath.Join(basepath, "NSFW")
+	filterBySfw(db, false, folderNsfw)
+}
+
 func main() {
 	basepath := "./testdata"
 	databasePath := initializeDB(basepath)
@@ -66,5 +76,6 @@ func main() {
 	defer db.Close()
 	scanFiles(basepath, db)
 	// filterCircleTest(basepath, db)
-
+	// filterNsfwTest(basepath, db)
+	// filterSfwTest(basepath, db)
 }
