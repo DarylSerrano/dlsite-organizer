@@ -27,7 +27,8 @@ func initializeDB(path string) string {
 		log.Panic(err)
 	}
 	var databasePath = filepath.Join(dataPath, "data.db")
-	if !fileExists(dataPath) {
+	if !fileExists(databasePath) {
+		log.Print("Database doesnt exists, creating", dataPath)
 		_, err = os.Create(databasePath)
 		if err != nil {
 			log.Panic(err)
@@ -58,4 +59,7 @@ func main() {
 	}
 	defer db.Close()
 	scanFiles(basepath, db)
+	circle := CircleDB{ID: 38835, Name: "みやぢ屋"}
+	filterpath := filepath.Join(basepath, "Circles")
+	filterByCircle(db, circle, filterpath)
 }

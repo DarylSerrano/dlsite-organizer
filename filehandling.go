@@ -65,20 +65,15 @@ func hasRJCode(filename string) bool {
 	return matched
 }
 
-func createSymbolicLink() {
-	absPath, err := filepath.Abs("foo")
+func createSymlink(path string, newName string) {
+	absPath, err := filepath.Abs(path)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
-	err = os.Symlink(absPath, "foolink")
+	err = os.Symlink(absPath, newName)
 
 	if err != nil {
-		log.Panic(err)
-	}
-
-	err = os.Rename("foolink", "links/foolink")
-	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 }
