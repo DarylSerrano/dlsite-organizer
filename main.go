@@ -72,6 +72,12 @@ func filterTagTest(basepath string, db *sql.DB) {
 	filterByTag(db, tag, folderTag)
 }
 
+func filterVATest(basepath string, db *sql.DB) {
+	va := VoiceActorDB{ID: 1, Name: "みやぢ"}
+	folderVA := filepath.Join(basepath, "VAs")
+	filterByVoiceActor(db, va, folderVA)
+}
+
 func main() {
 	basepath := "./testdata"
 	databasePath := initializeDB(basepath)
@@ -84,5 +90,6 @@ func main() {
 	// filterCircleTest(basepath, db)
 	// filterNsfwTest(basepath, db)
 	// filterSfwTest(basepath, db)
-	filterTagTest(basepath, db)
+	// filterTagTest(basepath, db)
+	filterVATest(basepath, db)
 }

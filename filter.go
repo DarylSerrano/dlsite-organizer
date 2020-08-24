@@ -27,6 +27,12 @@ type TagDB struct {
 	Name string
 }
 
+// A VoiceActorDB contains data of the VA on the DB
+type VoiceActorDB struct {
+	ID   int
+	Name string
+}
+
 func scanWorksFiltered(rows *sql.Rows) []WorkFilterResult {
 	var works []WorkFilterResult
 	for rows.Next() {
@@ -81,8 +87,17 @@ func getFilteredWorksByTag(db *sql.DB, tagID int) []WorkFilterResult {
 	return works
 }
 
-func getFilteredWorksByVoiceActor(db *sql.DB, voiceActorID int) {
-
+func getFilteredWorksByVoiceActor(db *sql.DB, voiceActorID int) []WorkFilterResult {
+	rows, err := db.Query(
+		`SELECT w.ID, w.Name, w.Filepath FROM Works w 
+			INNER JOIN WorkVoiceActor wva ON w.ID = wva.WorkID
+			WHERE wva.VoiceActorID = ?`, voiceActorID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var works = scanWorksFiltered(rows)
+	return works
 }
 
 func filterByCircle(db *sql.DB, circle CircleDB, basepath string) {
@@ -123,6 +138,17 @@ func filterByTag(db *sql.DB, tag TagDB, basepath string) {
 	for _, work := range works {
 		filename := fmt.Sprint("RJ", work.ID)
 		newName := filepath.Join(tagFolder, filename)
+		createSymlink(work.filepath, newName)
+	}
+}
+
+func filterByVoiceActor(db *sql.DB, va VoiceActorDB, basepath string) {
+	works := getFilteredWorksByVoiceActor(db, va.ID)
+	vaFolder := filepath.Join(basepath, va.Name)
+	os.MkdirAll(vaFolder, 0755)
+	for _, work := range works {
+		filename := fmt.Sprint("RJ", work.ID)
+		newName := filepath.Join(vaFolder, filename)
 		createSymlink(work.filepath, newName)
 	}
 }
