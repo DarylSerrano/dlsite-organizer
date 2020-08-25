@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/DarylSerrano/dlsite-organizer/internal/database"
+	"github.com/DarylSerrano/dlsite-organizer/internal/filehandler"
 	"github.com/spf13/cobra"
 )
 
@@ -31,6 +33,13 @@ var cmdRefresh = &cobra.Command{
 
 		fmt.Println("BasePath: " + basePath)
 		fmt.Println("Databasepath: " + dbDir)
+		databasePath := filehandler.CreateDBFile(dbDir)
+		db, err := database.OpenDB(databasePath)
+		if err != nil {
+			fmt.Print(err)
+			os.Exit(1)
+		}
+		filehandler.ScanFiles(db, basePath)
 	},
 }
 
