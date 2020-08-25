@@ -20,26 +20,21 @@ var cmdRefresh = &cobra.Command{
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Echo: " + strings.Join(args, " "))
-		var basePath string
-		var err error
-		if len(args) < 1 {
-			basePath, err = os.Getwd()
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			basePath = args[0]
+		basePath, err := getBasePath(args)
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		fmt.Println("BasePath: " + basePath)
+		fmt.Println("BasePath: " + *basePath)
 		fmt.Println("Databasepath: " + dbDir)
 		databasePath := filehandler.CreateDBFile(dbDir)
 		db, err := database.OpenDB(databasePath)
+		defer db.Close()
 		if err != nil {
 			fmt.Print(err)
 			os.Exit(1)
 		}
-		filehandler.ScanFiles(db, basePath)
+		filehandler.ScanFiles(db, *basePath)
 	},
 }
 
@@ -47,15 +42,31 @@ var rootCmd = &cobra.Command{
 	Use: "organizer",
 }
 
+func getBasePath(args []string) (*string, error) {
+	var basePath string
+	var err error
+	if len(args) < 1 {
+		basePath, err = os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		return &basePath, nil
+	}
+
+	basePath = args[0]
+	return &basePath, nil
+}
+
 func init() {
 	basePath, err := os.Getwd()
 	if err != nil {
 		log.Panic(err)
 	}
-	cmdRefresh.PersistentFlags().StringVar(&dbDir, "db", basePath, "Dir where database is, default path is cwd/data.db")
+	rootCmd.PersistentFlags().StringVar(&dbDir, "db", basePath, "Dir where database is")
 	rootCmd.AddCommand(cmdRefresh)
 }
 
+// Execute runs commandline
 func Execute() error {
 	return rootCmd.Execute()
 }
