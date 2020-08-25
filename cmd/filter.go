@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cmdFilter = &cobra.Command{
+var cmdRootFilter = &cobra.Command{
 	Use:   "filter",
 	Short: "Filter works, default filter by sfw",
 	Long:  "Filter works by circle, va, tags..., the default is to filter by sfw",
@@ -37,6 +37,8 @@ var cmdFilter = &cobra.Command{
 	},
 }
 
+var cmdSfwFilter = &cobra.Command{}
+
 func init() {
-	rootCmd.AddCommand(cmdFilter)
+	rootCmd.AddCommand(cmdRootFilter)
 }
