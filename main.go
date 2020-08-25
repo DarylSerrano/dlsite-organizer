@@ -2,36 +2,23 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/DarylSerrano/dlsite-organizer/cmd"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func fileExists(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-		log.Fatal(err)
-	}
-	return !info.IsDir()
-}
-
 func initializeDB(path string) string {
-	var dataPath = filepath.Join(path, "data")
-	err := os.MkdirAll(dataPath, 0755)
-	if err != nil {
-		log.Panic(err)
-	}
-	var databasePath = filepath.Join(dataPath, "data.db")
+	var databasePath = filepath.Join(path, "data.db")
 	if !fileExists(databasePath) {
-		log.Print("Database doesnt exists, creating", dataPath)
-		_, err = os.Create(databasePath)
+		log.Print("Database doesnt exists, creating", databasePath)
+		_, err := os.Create(databasePath)
 		if err != nil {
-			log.Panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 
@@ -79,17 +66,24 @@ func filterVATest(basepath string, db *sql.DB) {
 }
 
 func main() {
-	basepath := "./testdata"
-	databasePath := initializeDB(basepath)
-	db, err := openDB(databasePath)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer db.Close()
-	scanFiles(basepath, db)
+	// basepath := "./testdata"
+	// databasePath := initializeDB(basepath)
+	// db, err := openDB(databasePath)
+	// if err != nil {
+	// 	log.Panic(err)
+	// }
+	// defer db.Close()
+	// scanFiles(basepath, db)
+
 	// filterCircleTest(basepath, db)
 	// filterNsfwTest(basepath, db)
 	// filterSfwTest(basepath, db)
 	// filterTagTest(basepath, db)
-	filterVATest(basepath, db)
+	// filterVATest(basepath, db)
+
+	err := cmd.Execute()
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
 }

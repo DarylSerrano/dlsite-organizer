@@ -70,3 +70,14 @@ func createSymlink(path string, newName string) {
 		log.Fatal(err)
 	}
 }
+
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+		log.Fatal(err)
+	}
+	return !info.IsDir()
+}
