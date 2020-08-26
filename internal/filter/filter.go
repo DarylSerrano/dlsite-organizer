@@ -49,6 +49,19 @@ func scanWorksFiltered(rows *sql.Rows) []WorkFilterResult {
 	return works
 }
 
+func scanTags(rows *sql.Rows) []TagDB {
+	var tags []TagDB
+	for rows.Next() {
+		var tag TagDB
+		err := rows.Scan(&tag.ID, &tag.Name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		tags = append(tags, tag)
+	}
+	return tags
+}
+
 func getFilteredWorskByCircle(db *sql.DB, circleID int) []WorkFilterResult {
 	rows, err := db.Query("SELECT ID, Name, Filepath FROM Works WHERE CircleID = ?", circleID)
 	if err != nil {
@@ -114,6 +127,16 @@ func FilterByCircle(db *sql.DB, circle CircleDB, basepath string) {
 		newName := filepath.Join(circleFolder, filename)
 		filehandler.CreateSymlink(work.filepath, newName)
 	}
+}
+
+func GetAllTags(db *sql.DB) []TagDB {
+	rows, err := db.Query(`SELECT ID, NAME FROM Tags`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var tags = scanTags(rows)
+	return tags
 }
 
 func FilterBySfw(db *sql.DB, isSfw bool, basepath string) {
