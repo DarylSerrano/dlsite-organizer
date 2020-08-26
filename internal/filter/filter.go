@@ -62,6 +62,32 @@ func scanTags(rows *sql.Rows) []TagDB {
 	return tags
 }
 
+func scanCircles(rows *sql.Rows) []CircleDB {
+	var circles []CircleDB
+	for rows.Next() {
+		var circle CircleDB
+		err := rows.Scan(&circle.ID, &circle.Name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		circles = append(circles, circle)
+	}
+	return circles
+}
+
+func scanVoiceActors(rows *sql.Rows) []VoiceActorDB {
+	var vas []VoiceActorDB
+	for rows.Next() {
+		var va VoiceActorDB
+		err := rows.Scan(&va.ID, &va.Name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		vas = append(vas, va)
+	}
+	return vas
+}
+
 func getFilteredWorskByCircle(db *sql.DB, circleID int) []WorkFilterResult {
 	rows, err := db.Query("SELECT ID, Name, Filepath FROM Works WHERE CircleID = ?", circleID)
 	if err != nil {
@@ -137,6 +163,26 @@ func GetAllTags(db *sql.DB) []TagDB {
 	defer rows.Close()
 	var tags = scanTags(rows)
 	return tags
+}
+
+func GetAllCircles(db *sql.DB) []CircleDB {
+	rows, err := db.Query(`SELECT ID, NAME FROM Circles`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var circles = scanCircles(rows)
+	return circles
+}
+
+func GetAllVoiceActors(db *sql.DB) []VoiceActorDB {
+	rows, err := db.Query(`SELECT ID, Name FROM VoiceActors`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var vas = scanVoiceActors(rows)
+	return vas
 }
 
 func FilterBySfw(db *sql.DB, isSfw bool, basepath string) {
