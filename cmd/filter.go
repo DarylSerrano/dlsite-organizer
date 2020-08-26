@@ -14,6 +14,7 @@ import (
 )
 
 var isSfw bool
+var all bool
 
 var cmdRootFilter = &cobra.Command{
 	Use:   "filter",
@@ -91,43 +92,51 @@ var cmdTagFilter = &cobra.Command{
 
 		tags := filter.GetAllTags(db)
 
-		templates := &promptui.SelectTemplates{
-			Label:    "{{ . }}?",
-			Active:   "\U000027A1 {{ .Name | cyan }}",
-			Inactive: "  {{ .Name | cyan }}",
+		if all {
+			for _, tag := range tags {
+				filter.FilterByTag(db, tag, *basePath)
+			}
+		} else {
+			templates := &promptui.SelectTemplates{
+				Label:    "{{ . }}?",
+				Active:   "\U000027A1 {{ .Name | cyan }}",
+				Inactive: "  {{ .Name | cyan }}",
+			}
+
+			searcher := func(input string, index int) bool {
+				tag := tags[index]
+				name := strings.Replace(strings.ToLower(tag.Name), " ", "", -1)
+				input = strings.Replace(strings.ToLower(input), " ", "", -1)
+
+				return strings.Contains(name, input)
+			}
+
+			prompt := promptui.Select{
+				Label:     "Select Tag",
+				Items:     tags,
+				Templates: templates,
+				Size:      5,
+				Searcher:  searcher,
+			}
+
+			i, _, err := prompt.Run()
+
+			if err != nil {
+				log.Fatalf("Prompt failed %v\n", err)
+			}
+
+			id := tags[i].ID
+			log.Println("You picked: index", i, "result: ", tags[i].Name, " tag ID: ", id)
+
+			filter.FilterByTag(db, tags[i], *basePath)
 		}
 
-		searcher := func(input string, index int) bool {
-			tag := tags[index]
-			name := strings.Replace(strings.ToLower(tag.Name), " ", "", -1)
-			input = strings.Replace(strings.ToLower(input), " ", "", -1)
-
-			return strings.Contains(name, input)
-		}
-
-		prompt := promptui.Select{
-			Label:     "Select Tag",
-			Items:     tags,
-			Templates: templates,
-			Size:      5,
-			Searcher:  searcher,
-		}
-
-		i, _, err := prompt.Run()
-
-		if err != nil {
-			log.Fatalf("Prompt failed %v\n", err)
-		}
-
-		id := tags[i].ID
-		log.Println("You picked: index", i, "result: ", tags[i].Name, " tag ID: ", id)
-
-		filter.FilterByTag(db, tags[i], *basePath)
 	},
 }
 
 func init() {
 	cmdSfwFilter.Flags().BoolVarP(&isSfw, "isSFW", "s", true, "Should filter by SFW Works")
+	cmdTagFilter.Flags().BoolVarP(&all, "all", "a", false, "Filter all instead of select one")
 	cmdRootFilter.AddCommand(cmdSfwFilter, cmdTagFilter)
 	rootCmd.AddCommand(cmdRootFilter)
 }
