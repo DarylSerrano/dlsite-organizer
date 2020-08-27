@@ -11,6 +11,7 @@ Simple cli tool for organizing DLsite works on local folder.
 $ go get -u github.com/DarylSerrano/dlsite-organizer
 $ go install github.com/DarylSerrano/dlsite-organizer
 ```
+* For Windows OS you must have the `gcc` compiler installed. You can use [TDM-GCC](https://jmeubank.github.io/tdm-gcc/)
 
 ## Usage
 ```bash
@@ -24,4 +25,4 @@ $ dlsite-organizer filter tags --db "./test/testdata" "./test/test" # Filter by 
 This is a personal project but feel free to contribute (PR-s and issues are welcomed).
 
 ## License
-[MIT license](./LICENSE)
+[Apache license 2.0](./LICENSE)
