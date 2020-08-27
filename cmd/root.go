@@ -36,7 +36,7 @@ var cmdRefresh = &cobra.Command{
 }
 
 var rootCmd = &cobra.Command{
-	Use: "organizer",
+	Use: "dlsite-organizer",
 }
 
 func getBasePath(args []string) (*string, error) {
