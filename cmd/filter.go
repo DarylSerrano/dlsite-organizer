@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -26,9 +25,6 @@ var cmdRootFilter = &cobra.Command{
 		}
 		databasePath := filehandler.CreateDBFile(dbDir)
 
-		fmt.Println("BasePath: " + *basePath)
-		fmt.Println("Databasepath: " + dbDir)
-
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
@@ -50,9 +46,6 @@ var cmdSfwFilter = &cobra.Command{
 			log.Fatal(err)
 		}
 		databasePath := filehandler.CreateDBFile(dbDir)
-
-		fmt.Println("BasePath: " + *basePath)
-		fmt.Println("Databasepath: " + dbDir)
 
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
@@ -76,9 +69,6 @@ var cmdNsfwFilter = &cobra.Command{
 		}
 		databasePath := filehandler.CreateDBFile(dbDir)
 
-		fmt.Println("BasePath: " + *basePath)
-		fmt.Println("Databasepath: " + dbDir)
-
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
@@ -100,9 +90,6 @@ var cmdTagFilter = &cobra.Command{
 			log.Fatal(err)
 		}
 		databasePath := filehandler.CreateDBFile(dbDir)
-
-		fmt.Println("BasePath: " + *basePath)
-		fmt.Println("Databasepath: " + dbDir)
 
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
@@ -162,9 +149,6 @@ var cmdCircleFilter = &cobra.Command{
 		}
 		databasePath := filehandler.CreateDBFile(dbDir)
 
-		fmt.Println("BasePath: " + *basePath)
-		fmt.Println("Databasepath: " + dbDir)
-
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
@@ -222,9 +206,6 @@ var cmdVAFilter = &cobra.Command{
 			log.Fatal(err)
 		}
 		databasePath := filehandler.CreateDBFile(dbDir)
-
-		fmt.Println("BasePath: " + *basePath)
-		fmt.Println("Databasepath: " + dbDir)
 
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()

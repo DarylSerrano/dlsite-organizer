@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -23,8 +22,6 @@ var cmdRefresh = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		fmt.Println("BasePath: " + *basePath)
-		fmt.Println("Databasepath: " + dbDir)
 		databasePath := filehandler.CreateDBFile(dbDir)
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
