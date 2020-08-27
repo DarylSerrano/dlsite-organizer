@@ -43,7 +43,6 @@ func scanWorksFiltered(rows *sql.Rows) []WorkFilterResult {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Print("work", work)
 		works = append(works, work)
 	}
 	return works
@@ -100,6 +99,7 @@ func getFilteredWorskByCircle(db *sql.DB, circleID int) []WorkFilterResult {
 
 func getFilteredWorksBySfw(db *sql.DB, isSfw bool) []WorkFilterResult {
 	var sfw int
+	var works []WorkFilterResult
 	if isSfw {
 		sfw = 1
 	} else {
@@ -111,11 +111,13 @@ func getFilteredWorksBySfw(db *sql.DB, isSfw bool) []WorkFilterResult {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	var works = scanWorksFiltered(rows)
+	works = scanWorksFiltered(rows)
+
 	return works
 }
 
 func getFilteredWorksByTag(db *sql.DB, tagID int) []WorkFilterResult {
+	var works []WorkFilterResult
 	rows, err := db.Query(
 		`SELECT w.ID, w.Name, w.Filepath FROM Works w 
 			INNER JOIN WorkTag wt ON w.ID = wt.WorkID
@@ -124,11 +126,13 @@ func getFilteredWorksByTag(db *sql.DB, tagID int) []WorkFilterResult {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	var works = scanWorksFiltered(rows)
+	works = scanWorksFiltered(rows)
+
 	return works
 }
 
 func getFilteredWorksByVoiceActor(db *sql.DB, voiceActorID int) []WorkFilterResult {
+	var works []WorkFilterResult
 	rows, err := db.Query(
 		`SELECT w.ID, w.Name, w.Filepath FROM Works w 
 			INNER JOIN WorkVoiceActor wva ON w.ID = wva.WorkID
@@ -137,24 +141,12 @@ func getFilteredWorksByVoiceActor(db *sql.DB, voiceActorID int) []WorkFilterResu
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	var works = scanWorksFiltered(rows)
+	works = scanWorksFiltered(rows)
+
 	return works
 }
 
-func FilterByCircle(db *sql.DB, circle CircleDB, basepath string) {
-	works := getFilteredWorskByCircle(db, circle.ID)
-	// Create Circle folder
-	circleFolder := filepath.Join(basepath, circle.Name)
-	os.MkdirAll(circleFolder, 0755)
-	// Filter
-	// Each work create symlink
-	for _, work := range works {
-		filename := fmt.Sprint("RJ", work.ID)
-		newName := filepath.Join(circleFolder, filename)
-		filehandler.CreateSymlink(work.filepath, newName)
-	}
-}
-
+// GetAllTags returns all tags stored on DB
 func GetAllTags(db *sql.DB) []TagDB {
 	rows, err := db.Query(`SELECT ID, NAME FROM Tags`)
 	if err != nil {
@@ -165,6 +157,7 @@ func GetAllTags(db *sql.DB) []TagDB {
 	return tags
 }
 
+// GetAllCircles returns all circles stored on DB
 func GetAllCircles(db *sql.DB) []CircleDB {
 	rows, err := db.Query(`SELECT ID, NAME FROM Circles`)
 	if err != nil {
@@ -175,6 +168,7 @@ func GetAllCircles(db *sql.DB) []CircleDB {
 	return circles
 }
 
+// GetAllVoiceActors returns all Voice Actors stored opn DB
 func GetAllVoiceActors(db *sql.DB) []VoiceActorDB {
 	rows, err := db.Query(`SELECT ID, Name FROM VoiceActors`)
 	if err != nil {
@@ -185,7 +179,21 @@ func GetAllVoiceActors(db *sql.DB) []VoiceActorDB {
 	return vas
 }
 
-func FilterBySfw(db *sql.DB, isSfw bool, basepath string) {
+// ByCircle filters works by Circle and create symbolic links for the files of the works filtered
+func ByCircle(db *sql.DB, circle CircleDB, basepath string) {
+	works := getFilteredWorskByCircle(db, circle.ID)
+	circleFolder := filepath.Join(basepath, circle.Name)
+	os.MkdirAll(circleFolder, 0755)
+
+	for _, work := range works {
+		filename := fmt.Sprint("RJ", work.ID)
+		newName := filepath.Join(circleFolder, filename)
+		filehandler.CreateSymlink(work.filepath, newName)
+	}
+}
+
+// BySfw filters works by SFW or NSFW and create symbolic links for the files of the works filtered
+func BySfw(db *sql.DB, isSfw bool, basepath string) {
 	works := getFilteredWorksBySfw(db, isSfw)
 	var folderName string
 	if isSfw {
@@ -202,7 +210,8 @@ func FilterBySfw(db *sql.DB, isSfw bool, basepath string) {
 	}
 }
 
-func FilterByTag(db *sql.DB, tag TagDB, basepath string) {
+// ByTag filters works by Tag and create symbolic links for the files of the works filtered
+func ByTag(db *sql.DB, tag TagDB, basepath string) {
 	works := getFilteredWorksByTag(db, tag.ID)
 	tagFolder := filepath.Join(basepath, tag.Name)
 	os.MkdirAll(tagFolder, 0755)
@@ -213,7 +222,8 @@ func FilterByTag(db *sql.DB, tag TagDB, basepath string) {
 	}
 }
 
-func FilterByVoiceActor(db *sql.DB, va VoiceActorDB, basepath string) {
+// ByVoiceActor filters works by Voice Actor and create symbolic links for the files of the works filtered
+func ByVoiceActor(db *sql.DB, va VoiceActorDB, basepath string) {
 	works := getFilteredWorksByVoiceActor(db, va.ID)
 	vaFolder := filepath.Join(basepath, va.Name)
 	os.MkdirAll(vaFolder, 0755)

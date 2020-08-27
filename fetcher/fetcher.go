@@ -87,6 +87,7 @@ func getUrlfromCode(code string) string {
 	return fmt.Sprintf("https://www.dlsite.com/maniax/work/=/product_id/RJ%s.html", code)
 }
 
+// FetchWork scraps information of the work from DLSite
 func FetchWork(code string) (*Work, error) {
 	url := getUrlfromCode(code)
 	c := colly.NewCollector()
@@ -115,7 +116,7 @@ func FetchWork(code string) (*Work, error) {
 
 	// Set error handler
 	c.OnError(func(r *colly.Response, e error) {
-		err = fmt.Errorf("Request URL: %s failed with response: %s \nError: %s", r.Request.URL.String(), r, e)
+		err = fmt.Errorf("Request URL: %v failed with response: %v \nError: %s", r.Request.URL.String(), r, e)
 	})
 
 	c.Visit(url)

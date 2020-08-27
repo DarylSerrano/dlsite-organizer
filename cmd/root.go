@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/DarylSerrano/dlsite-organizer/internal/database"
 	"github.com/DarylSerrano/dlsite-organizer/internal/filehandler"
@@ -19,7 +18,6 @@ var cmdRefresh = &cobra.Command{
 	Long:  "Refresh database with information from dir arg or current dir",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Echo: " + strings.Join(args, " "))
 		basePath, err := getBasePath(args)
 		if err != nil {
 			log.Fatal(err)
@@ -31,8 +29,7 @@ var cmdRefresh = &cobra.Command{
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
-			fmt.Print(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		filehandler.ScanFiles(db, *basePath)
 	},
@@ -60,7 +57,7 @@ func getBasePath(args []string) (*string, error) {
 func init() {
 	basePath, err := os.Getwd()
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	rootCmd.PersistentFlags().StringVar(&dbDir, "db", basePath, "Dir where database is")
 	rootCmd.AddCommand(cmdRefresh)

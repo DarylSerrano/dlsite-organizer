@@ -27,18 +27,6 @@ func (e *errorString) Error() string {
 	return e.s
 }
 
-func OpenDB(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", path)
-	if err != nil {
-		return nil, err
-	}
-	err = createTables(db)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
-}
-
 func getTagID(db *sql.DB, tagName string) (int, error) {
 	var ID int
 	err := db.QueryRow("SELECT ID FROM Tags WHERE Name = ?", tagName).Scan(&ID)
@@ -46,8 +34,7 @@ func getTagID(db *sql.DB, tagName string) (int, error) {
 		if err == sql.ErrNoRows {
 			return 0, &errorString{s: "Not found"}
 		}
-
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	return ID, nil
 }
@@ -60,7 +47,7 @@ func getVoiceActorID(db *sql.DB, voiceActorName string) (int, error) {
 			return 0, &errorString{s: "Not found"}
 		}
 
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	return ID, nil
 }
@@ -73,7 +60,6 @@ func postTag(db *sql.DB, tagName string) {
 }
 
 func postCircle(db *sql.DB, id string, name string) {
-	log.Print("create circle ", id, name)
 	_, err := db.Exec(`INSERT INTO Circles(ID, Name) VALUES(?, ?)`, id, name)
 	if err != nil {
 		log.Fatal(err)
@@ -103,8 +89,6 @@ func postWorkVoiceActor(db *sql.DB, workID int, voiceActorID int) {
 }
 
 func postWork(db *sql.DB, work fetcher.Work, filepath string) {
-	log.Print("create work ", work, filepath)
-
 	var isSfw int
 	if work.SFW {
 		isSfw = 1
@@ -127,7 +111,6 @@ func updateWorkFilepath(db *sql.DB, work fetcher.Work, filepath string) {
 
 func rowExists(db *sql.DB, tableName string, name string) bool {
 	query := fmt.Sprintf(`SELECT EXISTS(SELECT * FROM %s WHERE Name = '%s')`, tableName, name)
-	log.Print("row exists of: ", query)
 	var exists bool
 	err := db.QueryRow(query).Scan(&exists)
 	if err != nil {
@@ -135,7 +118,7 @@ func rowExists(db *sql.DB, tableName string, name string) bool {
 			return false
 		}
 
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	return exists
 }
@@ -148,7 +131,7 @@ func workExists(db *sql.DB, id int) bool {
 			return false
 		}
 
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	return true
 }
@@ -161,7 +144,7 @@ func circleIDExists(db *sql.DB, id int) bool {
 			return false
 		}
 
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	return true
 }
@@ -231,8 +214,22 @@ func createTables(db *sql.DB) error {
 	return err
 }
 
+// OpenDB opens the database from 'path' and creates initial tables
+func OpenDB(path string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", path)
+	if err != nil {
+		return nil, err
+	}
+	err = createTables(db)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+// SaveWork saves fetcher.Work data into DB, creates Circle, Tags and Voice Actors
+// if not present on DB and updates Filepath value if Work exists on DB
 func SaveWork(db *sql.DB, work fetcher.Work, filepath string) error {
-	log.Print("Saving ", work)
 	circleID, err := strconv.ParseInt(work.Circle.ID, 10, 32)
 	if err != nil {
 		return err
@@ -246,7 +243,6 @@ func SaveWork(db *sql.DB, work fetcher.Work, filepath string) error {
 	}
 
 	if workExists(db, int(workID)) {
-		log.Print("WOrk exists, update")
 		updateWorkFilepath(db, work, filepath)
 	} else {
 		postWork(db, work, filepath)

@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/DarylSerrano/dlsite-organizer/internal/database"
@@ -34,11 +33,10 @@ var cmdRootFilter = &cobra.Command{
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
-			fmt.Print(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
-		filter.FilterBySfw(db, true, *basePath)
+		filter.BySfw(db, true, *basePath)
 	},
 }
 
@@ -60,11 +58,10 @@ var cmdSfwFilter = &cobra.Command{
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
-			fmt.Print(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
-		filter.FilterBySfw(db, isSfw, *basePath)
+		filter.BySfw(db, isSfw, *basePath)
 	},
 }
 
@@ -86,15 +83,14 @@ var cmdTagFilter = &cobra.Command{
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
-			fmt.Print(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		tags := filter.GetAllTags(db)
 
 		if all {
 			for _, tag := range tags {
-				filter.FilterByTag(db, tag, *basePath)
+				filter.ByTag(db, tag, *basePath)
 			}
 		} else {
 			templates := &promptui.SelectTemplates{
@@ -125,10 +121,7 @@ var cmdTagFilter = &cobra.Command{
 				log.Fatalf("Prompt failed %v\n", err)
 			}
 
-			id := tags[i].ID
-			log.Println("You picked: index", i, "result: ", tags[i].Name, " tag ID: ", id)
-
-			filter.FilterByTag(db, tags[i], *basePath)
+			filter.ByTag(db, tags[i], *basePath)
 		}
 	},
 }
@@ -151,15 +144,14 @@ var cmdCircleFilter = &cobra.Command{
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
-			fmt.Print(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		circles := filter.GetAllCircles(db)
 
 		if all {
 			for _, circle := range circles {
-				filter.FilterByCircle(db, circle, *basePath)
+				filter.ByCircle(db, circle, *basePath)
 			}
 		} else {
 			templates := &promptui.SelectTemplates{
@@ -190,10 +182,7 @@ var cmdCircleFilter = &cobra.Command{
 				log.Fatalf("Prompt failed %v\n", err)
 			}
 
-			id := circles[i].ID
-			log.Println("You picked: index", i, "result: ", circles[i].Name, " circle ID: ", id)
-
-			filter.FilterByCircle(db, circles[i], *basePath)
+			filter.ByCircle(db, circles[i], *basePath)
 		}
 	},
 }
@@ -216,15 +205,14 @@ var cmdVAFilter = &cobra.Command{
 		db, err := database.OpenDB(databasePath)
 		defer db.Close()
 		if err != nil {
-			fmt.Print(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		voiceActos := filter.GetAllVoiceActors(db)
 
 		if all {
 			for _, voiceActor := range voiceActos {
-				filter.FilterByVoiceActor(db, voiceActor, *basePath)
+				filter.ByVoiceActor(db, voiceActor, *basePath)
 			}
 		} else {
 			templates := &promptui.SelectTemplates{
@@ -255,10 +243,7 @@ var cmdVAFilter = &cobra.Command{
 				log.Fatalf("Prompt failed %v\n", err)
 			}
 
-			id := voiceActos[i].ID
-			log.Println("You picked: index", i, "result: ", voiceActos[i].Name, " Voice Actor ID: ", id)
-
-			filter.FilterByVoiceActor(db, voiceActos[i], *basePath)
+			filter.ByVoiceActor(db, voiceActos[i], *basePath)
 		}
 	},
 }

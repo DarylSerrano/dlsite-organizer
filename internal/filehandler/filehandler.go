@@ -14,39 +14,38 @@ import (
 
 var reCode = regexp.MustCompile(`R(J|G)\d+`)
 
+// CreateDBFile crates DB file if doesnt exists
 func CreateDBFile(path string) string {
 	var databasePath = filepath.Join(path, "data.db")
 	if !FileExists(databasePath) {
-		log.Print("Database doesnt exists, creating", databasePath)
+		fmt.Printf("Database doesnt exists, creating db on: %v\n", databasePath)
 		_, err := os.Create(databasePath)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 	}
 
 	return databasePath
 }
 
+// ScanFiles Traverse files on basepath and scraps and parse work data and saves the work on the DB
 func ScanFiles(db *sql.DB, basepath string) {
 	absPath, err := filepath.Abs(basepath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Print("abs path: ", absPath)
 
 	err = filepath.Walk(absPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 			return err
 		}
-		log.Printf("visited file or dir: %q\n", path)
 
 		if info.IsDir() {
 			return nil
 		}
 
 		if !info.IsDir() && HasRJCode(info.Name()) {
+			fmt.Printf("Scan file: %q\n", path)
 			rjCode := GetRJCode(info.Name())
 			work, err := fetcher.FetchWork(rjCode)
 			if err != nil {
@@ -65,17 +64,20 @@ func ScanFiles(db *sql.DB, basepath string) {
 	}
 }
 
+// GetRJCode returns rjcode
 func GetRJCode(filename string) string {
 	foundRj := reCode.FindString(filename)
 
 	return foundRj[2:]
 }
 
+// HasRJCode return true if has RJCode
 func HasRJCode(filename string) bool {
 	matched := reCode.MatchString(filename)
 	return matched
 }
 
+// CreateSymlink creates a symlink of the file
 func CreateSymlink(path string, newName string) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
@@ -89,6 +91,7 @@ func CreateSymlink(path string, newName string) {
 	}
 }
 
+// FileExists checks if file exists
 func FileExists(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {

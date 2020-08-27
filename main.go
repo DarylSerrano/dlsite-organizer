@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"log"
 
 	"github.com/DarylSerrano/dlsite-organizer/cmd"
 )
@@ -10,7 +9,6 @@ import (
 func main() {
 	err := cmd.Execute()
 	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
