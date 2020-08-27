@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var isSfw bool
 var all bool
 
 var cmdRootFilter = &cobra.Command{
@@ -42,8 +41,8 @@ var cmdRootFilter = &cobra.Command{
 
 var cmdSfwFilter = &cobra.Command{
 	Use:   "sfw",
-	Short: "Filter work by sfw/nsfw",
-	Long:  "Filter work by sfw/nsfw",
+	Short: "Filter work by sfw",
+	Long:  "Filter work by sfw",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		basePath, err := getBasePath(args)
@@ -61,7 +60,32 @@ var cmdSfwFilter = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		filter.BySfw(db, isSfw, *basePath)
+		filter.BySfw(db, true, *basePath)
+	},
+}
+
+var cmdNsfwFilter = &cobra.Command{
+	Use:   "nsfw",
+	Short: "Filter work by Nsfw",
+	Long:  "Filter work by Nsfw",
+	Args:  cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		basePath, err := getBasePath(args)
+		if err != nil {
+			log.Fatal(err)
+		}
+		databasePath := filehandler.CreateDBFile(dbDir)
+
+		fmt.Println("BasePath: " + *basePath)
+		fmt.Println("Databasepath: " + dbDir)
+
+		db, err := database.OpenDB(databasePath)
+		defer db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		filter.BySfw(db, false, *basePath)
 	},
 }
 
@@ -248,11 +272,10 @@ var cmdVAFilter = &cobra.Command{
 	},
 }
 
-func init() {
-	cmdSfwFilter.Flags().BoolVarP(&isSfw, "isSFW", "s", true, "Should filter by SFW Works")
+func configureFilter() {
 	cmdTagFilter.Flags().BoolVarP(&all, "all", "a", false, "Filter all instead of select one")
 	cmdCircleFilter.Flags().BoolVarP(&all, "all", "a", false, "Filter all instead of select one")
 	cmdVAFilter.Flags().BoolVarP(&all, "all", "a", false, "Filter all instead of select one")
-	cmdRootFilter.AddCommand(cmdSfwFilter, cmdTagFilter, cmdCircleFilter, cmdVAFilter)
+	cmdRootFilter.AddCommand(cmdSfwFilter, cmdNsfwFilter, cmdTagFilter, cmdCircleFilter, cmdVAFilter)
 	rootCmd.AddCommand(cmdRootFilter)
 }

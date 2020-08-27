@@ -19,20 +19,12 @@ type WorkDB struct {
 	circleID int
 }
 
-type errorString struct {
-	s string
-}
-
-func (e *errorString) Error() string {
-	return e.s
-}
-
 func getTagID(db *sql.DB, tagName string) (int, error) {
 	var ID int
 	err := db.QueryRow("SELECT ID FROM Tags WHERE Name = ?", tagName).Scan(&ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, &errorString{s: "Not found"}
+			return 0, fmt.Errorf("Not found %s", err)
 		}
 		log.Fatal(err)
 	}
@@ -44,7 +36,7 @@ func getVoiceActorID(db *sql.DB, voiceActorName string) (int, error) {
 	err := db.QueryRow("SELECT ID FROM VoiceActors WHERE Name = ?", voiceActorName).Scan(&ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, &errorString{s: "Not found"}
+			return 0, fmt.Errorf("Not found %s", err)
 		}
 
 		log.Fatal(err)

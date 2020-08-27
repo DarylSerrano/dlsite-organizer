@@ -54,16 +54,19 @@ func getBasePath(args []string) (*string, error) {
 	return &basePath, nil
 }
 
-func init() {
+func configureRoot() {
 	basePath, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 	rootCmd.PersistentFlags().StringVar(&dbDir, "db", basePath, "Dir where database is")
 	rootCmd.AddCommand(cmdRefresh)
+
+	configureFilter()
 }
 
 // Execute runs commandline
 func Execute() error {
+	configureRoot()
 	return rootCmd.Execute()
 }
