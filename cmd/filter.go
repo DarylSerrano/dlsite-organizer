@@ -14,10 +14,11 @@ import (
 var all bool
 
 var cmdRootFilter = &cobra.Command{
-	Use:   "filter",
-	Short: "Filter works, default filter by sfw",
-	Long:  "Filter works by circle, va, tags..., the default is to filter by sfw",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "filter",
+	Short:   "Filter works, default filter by sfw",
+	Long:    "Filter works by circle, va, tags..., the default is to filter by sfw",
+	Version: rootCmd.Version,
+	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		basePath, err := getBasePath(args)
 		if err != nil {
@@ -36,10 +37,11 @@ var cmdRootFilter = &cobra.Command{
 }
 
 var cmdSfwFilter = &cobra.Command{
-	Use:   "sfw",
-	Short: "Filter work by sfw",
-	Long:  "Filter work by sfw",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "sfw",
+	Short:   "Filter work by sfw",
+	Long:    "Filter work by sfw",
+	Version: rootCmd.Version,
+	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		basePath, err := getBasePath(args)
 		if err != nil {
@@ -58,10 +60,11 @@ var cmdSfwFilter = &cobra.Command{
 }
 
 var cmdNsfwFilter = &cobra.Command{
-	Use:   "nsfw",
-	Short: "Filter work by Nsfw",
-	Long:  "Filter work by Nsfw",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "nsfw",
+	Short:   "Filter work by Nsfw",
+	Long:    "Filter work by Nsfw",
+	Version: rootCmd.Version,
+	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		basePath, err := getBasePath(args)
 		if err != nil {
@@ -80,10 +83,11 @@ var cmdNsfwFilter = &cobra.Command{
 }
 
 var cmdTagFilter = &cobra.Command{
-	Use:   "tags",
-	Short: "Filter by tag",
-	Long:  "FIlter by tag saved on the db",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "tags",
+	Short:   "Filter by tag",
+	Long:    "FIlter by tag saved on the db",
+	Version: rootCmd.Version,
+	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		basePath, err := getBasePath(args)
 		if err != nil {
@@ -138,10 +142,11 @@ var cmdTagFilter = &cobra.Command{
 }
 
 var cmdCircleFilter = &cobra.Command{
-	Use:   "circles",
-	Short: "Filter by circles",
-	Long:  "FIlter by circles saved on the db",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "circles",
+	Short:   "Filter by circles",
+	Long:    "FIlter by circles saved on the db",
+	Version: rootCmd.Version,
+	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		basePath, err := getBasePath(args)
 		if err != nil {
@@ -196,10 +201,11 @@ var cmdCircleFilter = &cobra.Command{
 }
 
 var cmdVAFilter = &cobra.Command{
-	Use:   "vas",
-	Short: "Filter by Voice actors",
-	Long:  "FIlter by Voice actors saved on the db",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "vas",
+	Short:   "Filter by Voice actors",
+	Long:    "Filter by Voice actors saved on the db",
+	Version: rootCmd.Version,
+	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		basePath, err := getBasePath(args)
 		if err != nil {

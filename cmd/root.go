@@ -12,10 +12,11 @@ import (
 var dbDir string
 
 var cmdRefresh = &cobra.Command{
-	Use:   "refresh",
-	Short: "Refresh db",
-	Long:  "Refresh database with information from dir arg or current dir",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "refresh",
+	Short:   "Refresh db",
+	Long:    "Refresh database with information from dir arg or current dir",
+	Version: rootCmd.Version,
+	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		basePath, err := getBasePath(args)
 		if err != nil {
@@ -33,7 +34,10 @@ var cmdRefresh = &cobra.Command{
 }
 
 var rootCmd = &cobra.Command{
-	Use: "dlsite-organizer",
+	Use:     "dlsite-organizer",
+	Short:   "Simple cli tool for organizing DLsite works on local folder.",
+	Long:    "Simple cli tool for organizing DLsite works on local folder.",
+	Version: "v0.1.0",
 }
 
 func getBasePath(args []string) (*string, error) {
@@ -57,7 +61,7 @@ func configureRoot() {
 		log.Fatal(err)
 	}
 	rootCmd.PersistentFlags().StringVar(&dbDir, "db", basePath, "Dir where database is")
-	rootCmd.AddCommand(cmdRefresh)
+	rootCmd.AddCommand(cmdRefresh, versionCmd)
 
 	configureFilter()
 }
